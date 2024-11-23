@@ -31,7 +31,6 @@ def check_only_finger(image):
                 x_thumb_tip - x_thumb_mcp) <= 90:
             return True
         return False
-
     return False
 
 
@@ -53,18 +52,24 @@ with mp.solutions.hands.Hands(static_image_mode=True, max_num_hands=1, min_detec
                             0.7, (0, 0, 0))
                 PHASE = 2
             else:
-                cv2.putText(flippedRGB, "You should be drawing with only one finger!", (40, 20), cv2.FONT_HERSHEY_SCRIPT_SIMPLEX,
-                            1.3, (0, 0, 0))
+                cv2.putText(flippedRGB, "You should be drawing with only one finger!", (20, 40),
+                            cv2.FONT_HERSHEY_SIMPLEX,1.5, (0, 0, 0))
 
         elif PHASE == 2:
-            cv2.circle(flippedRGB, (flippedRGB.shape[1] // 2, flippedRGB[0] // 2), 10, (84, 59, 59), -1)
+            cv2.circle(flippedRGB, (flippedRGB.shape[1] // 2, flippedRGB.shape[0] // 2), 10, (84, 59, 59), -1)
             if not DRAWING:
                 cv2.putText(flippedRGB, f"Start drawing in {SECONDS_UNTIL_DRAWING} seconds", (40, 20),
                             cv2.FONT_HERSHEY_SCRIPT_SIMPLEX,
                             1.3, (0, 0, 0))
-                SECONDS_UNTIL_DRAWING -= 1
+                if REMOVE_SECOND_UNTIL_DRAWING == 10:
+                    SECONDS_UNTIL_DRAWING -= 1
+                    REMOVE_SECOND_UNTIL_DRAWING = 0
+                else:
+                    REMOVE_SECOND_UNTIL_DRAWING += 1
+
                 if SECONDS_UNTIL_DRAWING == 0:
                     DRAWING = True
+
         res_image = cv2.cvtColor(flippedRGB, cv2.COLOR_RGB2BGR)
         cv2.imshow("Hands", res_image)
 
