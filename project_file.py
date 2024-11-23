@@ -57,7 +57,14 @@ with mp.solutions.hands.Hands(static_image_mode=True, max_num_hands=1, min_detec
                             1.3, (0, 0, 0))
 
         elif PHASE == 2:
-            continue
+            cv2.circle(flippedRGB, (flippedRGB.shape[1] // 2, flippedRGB[0] // 2), 10, (84, 59, 59), -1)
+            if not DRAWING:
+                cv2.putText(flippedRGB, f"Start drawing in {SECONDS_UNTIL_DRAWING} seconds", (40, 20),
+                            cv2.FONT_HERSHEY_SCRIPT_SIMPLEX,
+                            1.3, (0, 0, 0))
+                SECONDS_UNTIL_DRAWING -= 1
+                if SECONDS_UNTIL_DRAWING == 0:
+                    DRAWING = True
         res_image = cv2.cvtColor(flippedRGB, cv2.COLOR_RGB2BGR)
         cv2.imshow("Hands", res_image)
 
