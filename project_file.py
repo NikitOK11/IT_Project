@@ -27,7 +27,7 @@ def check_only_finger(image):
         if abs(y_thumb_tip - y_thumb_mcp) <= 110 and abs(y_middle_finger_tip - y_middle_finger_mcp) <= 110 and abs(
                 y_ring_finger_tip - y_ring_finger_mcp) <= 110 and abs(
                 y_pinky_tip - y_pinky_mcp) <= 110 and y_index_tip <= y_index_mcp and abs(
-                x_thumb_tip - x_thumb_mcp) <= 70:
+                x_thumb_tip - x_thumb_mcp) <= 90:
             return True
         return False
 
@@ -44,39 +44,11 @@ with mp.solutions.hands.Hands(static_image_mode=True, max_num_hands=1, min_detec
         flipped = np.fliplr(frame)
         flippedRGB = cv2.cvtColor(flipped, cv2.COLOR_BGR2RGB)
 
-        # hands = handsDetector.process(flippedRGB)
-        # if hands.multi_hand_landmarks is not None:
-        #     y_thumb_tip = int(hands.multi_hand_landmarks[0].landmark[4].y * flipped.shape[0])
-        #     y_thumb_mcp = int(hands.multi_hand_landmarks[0].landmark[2].y * flipped.shape[0])
-        #     x_thumb_tip = int(hands.multi_hand_landmarks[0].landmark[4].x * flipped.shape[1])
-        #     x_thumb_mcp = int(hands.multi_hand_landmarks[0].landmark[2].x * flipped.shape[1])
-        #
-        #     y_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].y * flipped.shape[0])
-        #     y_index_mcp = int(hands.multi_hand_landmarks[0].landmark[5].y * flipped.shape[0])
-        #
-        #     y_middle_finger_tip = int(hands.multi_hand_landmarks[0].landmark[12].y * flipped.shape[0])
-        #     y_middle_finger_mcp = int(hands.multi_hand_landmarks[0].landmark[9].y * flipped.shape[0])
-        #
-        #     y_ring_finger_tip = int(hands.multi_hand_landmarks[0].landmark[16].y * flipped.shape[0])
-        #     y_ring_finger_mcp = int(hands.multi_hand_landmarks[0].landmark[13].y * flipped.shape[0])
-        #
-        #     y_pinky_tip = int(hands.multi_hand_landmarks[0].landmark[20].y * flipped.shape[0])
-        #     y_pinky_mcp = int(hands.multi_hand_landmarks[0].landmark[17].y * flipped.shape[0])
-        #
-        #     print(f"Thumb tip: {y_thumb_tip}, thumb mcp: {y_thumb_mcp}")
-        #     print(f"index tip: {y_index_tip}, index mcp: {y_index_mcp}")
-        #     print(f"middle tip: {y_middle_finger_tip}, middle mcp: {y_middle_finger_mcp}")
-        #     print(f"ring tip: {y_ring_finger_tip}, ring mcp: {y_ring_finger_mcp}")
-        #     print(f"pinky tip: {y_index_tip}, pinky mcp: {y_index_mcp}")
-        #     print("")
-        #
-        #     if abs(y_thumb_tip - y_thumb_mcp) <= 110 and abs(y_middle_finger_tip - y_middle_finger_mcp) <= 110 and abs(y_ring_finger_tip - y_ring_finger_mcp) <= 110 and abs(y_pinky_tip - y_pinky_mcp) <= 110 and y_index_tip <= y_index_mcp and abs(x_thumb_tip - x_thumb_mcp) <= 70:
-        #         only_index_finger = True
         only_index_finger = check_only_finger(flippedRGB)
         if only_index_finger:
-            cv2.circle(flippedRGB, (flipped.shape[0] // 2, flipped.shape[1] // 2), 10, (0, 255, 0), -1)
+            cv2.circle(flippedRGB, (flipped.shape[1] // 2, flipped.shape[0] // 2), 10, (0, 255, 0), -1)
         else:
-            cv2.circle(flippedRGB, (flipped.shape[0] // 2, flipped.shape[1] // 2), 10, (255, 0, 0), -1)
+            cv2.circle(flippedRGB, (flipped.shape[1] // 2, flipped.shape[0] // 2), 10, (255, 0, 0), -1)
 
         res_image = cv2.cvtColor(flippedRGB, cv2.COLOR_RGB2BGR)
         cv2.imshow("Hands", res_image)
