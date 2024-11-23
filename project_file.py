@@ -1,6 +1,7 @@
 import cv2
 import mediapipe as mp
 import numpy as np
+from Settings import *
 
 
 def check_only_finger(image):
@@ -44,12 +45,19 @@ with mp.solutions.hands.Hands(static_image_mode=True, max_num_hands=1, min_detec
         flipped = np.fliplr(frame)
         flippedRGB = cv2.cvtColor(flipped, cv2.COLOR_BGR2RGB)
 
-        only_index_finger = check_only_finger(flippedRGB)
-        if only_index_finger:
-            cv2.circle(flippedRGB, (flipped.shape[1] // 2, flipped.shape[0] // 2), 10, (0, 255, 0), -1)
-        else:
-            cv2.circle(flippedRGB, (flipped.shape[1] // 2, flipped.shape[0] // 2), 10, (255, 0, 0), -1)
+        if PHASE == 1:
+            only_index_finger = check_only_finger(flippedRGB)
+            if only_index_finger:
+                cv2.putText(flippedRGB, "Captured your finger!", (20, 20),
+                            cv2.FONT_HERSHEY_SCRIPT_SIMPLEX,
+                            0.7, (0, 0, 0))
+                PHASE = 2
+            else:
+                cv2.putText(flippedRGB, "You should be drawing with only one finger!", (40, 20), cv2.FONT_HERSHEY_SCRIPT_SIMPLEX,
+                            1.3, (0, 0, 0))
 
+        elif PHASE == 2:
+            continue
         res_image = cv2.cvtColor(flippedRGB, cv2.COLOR_RGB2BGR)
         cv2.imshow("Hands", res_image)
 
