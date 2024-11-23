@@ -48,12 +48,12 @@ with mp.solutions.hands.Hands(static_image_mode=True, max_num_hands=1, min_detec
             only_index_finger = check_only_finger(flippedRGB)
             if only_index_finger:
                 cv2.putText(flippedRGB, "Captured your finger!", (20, 20),
-                            cv2.FONT_HERSHEY_SCRIPT_SIMPLEX,
+                            cv2.FONT_HERSHEY_SIMPLEX,
                             0.7, (0, 0, 0))
                 PHASE = 2
             else:
-                cv2.putText(flippedRGB, "You should be drawing with only one finger!", (20, 40),
-                            cv2.FONT_HERSHEY_SIMPLEX,1.5, (0, 0, 0))
+                cv2.putText(flippedRGB, "You should be drawing with only one finger!", (40, 20),
+                            cv2.FONT_HERSHEY_SIMPLEX,1.1, (0, 0, 0))
 
         elif PHASE == 2:
             cv2.circle(flippedRGB, (flippedRGB.shape[1] // 2, flippedRGB.shape[0] // 2), 10, (84, 59, 59), -1)
@@ -61,7 +61,7 @@ with mp.solutions.hands.Hands(static_image_mode=True, max_num_hands=1, min_detec
                 cv2.putText(flippedRGB, f"Start drawing in {SECONDS_UNTIL_DRAWING} seconds", (40, 20),
                             cv2.FONT_HERSHEY_SCRIPT_SIMPLEX,
                             1.3, (0, 0, 0))
-                if REMOVE_SECOND_UNTIL_DRAWING == 10:
+                if REMOVE_SECOND_UNTIL_DRAWING == 20:
                     SECONDS_UNTIL_DRAWING -= 1
                     REMOVE_SECOND_UNTIL_DRAWING = 0
                 else:
