@@ -1,3 +1,5 @@
+import math
+
 import cv2
 import mediapipe as mp
 import numpy as np
@@ -36,6 +38,7 @@ def check_only_finger(image):
 
 # noinspection PyGlobalUndefined
 def phaseCapturingFinger(frm):
+    cv2.circle(frm, (frm.shape[1] // 2, frm.shape[0] // 2), 13, (44, 62, 80), -1)
     if Settings.only_index_finger:
         cv2.putText(frm, "Captured your finger!", (160, 20),
                     cv2.FONT_HERSHEY_SIMPLEX,
@@ -46,15 +49,19 @@ def phaseCapturingFinger(frm):
             Settings.START_PHASE_TWO += 1
     else:
         Settings.only_index_finger = check_only_finger(flippedRGB)
-        cv2.putText(flippedRGB, "You should be drawing with only one finger!", (35, 25),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0))
+        cv2.putText(flippedRGB, "Can't see your index finger...", (15, 25),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0))
 
 
 # noinspection PyGlobalUndefined
 def phaseDrawingCircle(frm):
-    cv2.circle(frm, (frm.shape[1] // 2, frm.shape[0] // 2), 10, (84, 59, 59), -1)
+    hands = handsDetector.process(frm)
+
+    cv2.circle(frm, (frm.shape[1] // 2, frm.shape[0] // 2), 13, (44, 62, 80), -1)
     if not Settings.DRAWING:
-        cv2.putText(frm, f"Start drawing in {Settings.SECONDS_UNTIL_DRAWING} seconds", (140, 20),
+        cv2.putText(flippedRGB, "Place your finger to the point from which you start!", (15, 15),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0))
+        cv2.putText(frm, f"Start drawing in {Settings.SECONDS_UNTIL_DRAWING} seconds", (140, 25),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     0.8, (0, 0, 0))
 
@@ -65,9 +72,21 @@ def phaseDrawingCircle(frm):
             Settings.REMOVE_SECOND_UNTIL_DRAWING += 1
 
         if Settings.SECONDS_UNTIL_DRAWING == 0:
+            x_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].x * frm.shape[0])
+            y_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].y * frm.shape[0])
+            Settings.circle_radius = math.hypot(abs(frm.shape[1] // 2 - x_index_tip), abs(frm.shape[0] // 2 - y_index_tip))
+
+            Settings.index_frame_circles.append((x_index_tip, y_index_tip))
             Settings.DRAWING = True
     else:
-        ...
+        cv2.putText(frm, f"Draw the circle around the dot", (105, 20),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.8, (0, 0, 0))
+
+        for circle_point in Settings.index_frame_circles:
+            ...
+
+
 
 
 Settings.CURRENT_PHASE = phaseCapturingFinger
