@@ -1,7 +1,7 @@
 import cv2
 import mediapipe as mp
 import numpy as np
-from Settings import *
+import Settings
 
 
 def check_only_finger(image):
@@ -34,6 +34,43 @@ def check_only_finger(image):
     return False
 
 
+# noinspection PyGlobalUndefined
+def phaseCapturingFinger(frm):
+    if Settings.only_index_finger:
+        cv2.putText(frm, "Captured your finger!", (160, 20),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.8, (0, 0, 0))
+        if Settings.START_PHASE_TWO == 25:
+            Settings.CURRENT_PHASE = phaseDrawingCircle
+        else:
+            Settings.START_PHASE_TWO += 1
+    else:
+        Settings.only_index_finger = check_only_finger(flippedRGB)
+        cv2.putText(flippedRGB, "You should be drawing with only one finger!", (35, 25),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0))
+
+
+# noinspection PyGlobalUndefined
+def phaseDrawingCircle(frm):
+    cv2.circle(frm, (frm.shape[1] // 2, frm.shape[0] // 2), 10, (84, 59, 59), -1)
+    if not Settings.DRAWING:
+        cv2.putText(frm, f"Start drawing in {Settings.SECONDS_UNTIL_DRAWING} seconds", (140, 20),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.8, (0, 0, 0))
+
+        if Settings.REMOVE_SECOND_UNTIL_DRAWING == 30:
+            Settings.SECONDS_UNTIL_DRAWING -= 1
+            Settings.REMOVE_SECOND_UNTIL_DRAWING = 0
+        else:
+            Settings.REMOVE_SECOND_UNTIL_DRAWING += 1
+
+        if Settings.SECONDS_UNTIL_DRAWING == 0:
+            Settings.DRAWING = True
+    else:
+        ...
+
+
+Settings.CURRENT_PHASE = phaseCapturingFinger
 with mp.solutions.hands.Hands(static_image_mode=True, max_num_hands=1, min_detection_confidence=0.5) as handsDetector:
     capture = cv2.VideoCapture(0)
     while capture.isOpened():
@@ -41,37 +78,9 @@ with mp.solutions.hands.Hands(static_image_mode=True, max_num_hands=1, min_detec
         if cv2.waitKey(1) & 0xFF == ord('q') or not ret:
             break
 
-        flipped = np.fliplr(frame)
-        flippedRGB = cv2.cvtColor(flipped, cv2.COLOR_BGR2RGB)
+        flippedRGB = cv2.cvtColor(np.fliplr(frame), cv2.COLOR_BGR2RGB)
 
-        if PHASE == 1:
-            if only_index_finger:
-                cv2.putText(flippedRGB, "Captured your finger!", (160, 20),
-                            cv2.FONT_HERSHEY_SIMPLEX,
-                            0.8, (0, 0, 0))
-                if START_PHASE_TWO == 25:
-                    PHASE = 2
-                else:
-                    START_PHASE_TWO += 1
-            else:
-                only_index_finger = check_only_finger(flippedRGB)
-                cv2.putText(flippedRGB, "You should be drawing with only one finger!", (35, 25),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0))
-
-        elif PHASE == 2:
-            cv2.circle(flippedRGB, (flippedRGB.shape[1] // 2, flippedRGB.shape[0] // 2), 10, (84, 59, 59), -1)
-            if not DRAWING:
-                cv2.putText(flippedRGB, f"Start drawing in {SECONDS_UNTIL_DRAWING} seconds", (140, 20),
-                            cv2.FONT_HERSHEY_SIMPLEX,
-                            0.8, (0, 0, 0))
-                if REMOVE_SECOND_UNTIL_DRAWING == 30:
-                    SECONDS_UNTIL_DRAWING -= 1
-                    REMOVE_SECOND_UNTIL_DRAWING = 0
-                else:
-                    REMOVE_SECOND_UNTIL_DRAWING += 1
-
-                if SECONDS_UNTIL_DRAWING == 0:
-                    DRAWING = True
+        Settings.CURRENT_PHASE(flippedRGB)
 
         res_image = cv2.cvtColor(flippedRGB, cv2.COLOR_RGB2BGR)
         cv2.imshow("Hands", res_image)

@@ -1,6 +1,8 @@
 DRAWING = False
 only_index_finger = False
 
+CURRENT_PHASE = None
+
 PHASE = 1
 SECONDS_UNTIL_DRAWING = 5
 REMOVE_SECOND_UNTIL_DRAWING = 20
