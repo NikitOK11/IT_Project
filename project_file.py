@@ -28,7 +28,7 @@ def check_only_finger(image):
         if abs(y_thumb_tip - y_thumb_mcp) <= 110 and abs(y_middle_finger_tip - y_middle_finger_mcp) <= 110 and abs(
                 y_ring_finger_tip - y_ring_finger_mcp) <= 110 and abs(
                 y_pinky_tip - y_pinky_mcp) <= 110 and y_index_tip <= y_index_mcp and abs(
-                x_thumb_tip - x_thumb_mcp) <= 90:
+                x_thumb_tip - x_thumb_mcp) <= 85:
             return True
         return False
     return False
@@ -64,7 +64,7 @@ with mp.solutions.hands.Hands(static_image_mode=True, max_num_hands=1, min_detec
                 cv2.putText(flippedRGB, f"Start drawing in {SECONDS_UNTIL_DRAWING} seconds", (140, 20),
                             cv2.FONT_HERSHEY_SIMPLEX,
                             0.8, (0, 0, 0))
-                if REMOVE_SECOND_UNTIL_DRAWING == 20:
+                if REMOVE_SECOND_UNTIL_DRAWING == 30:
                     SECONDS_UNTIL_DRAWING -= 1
                     REMOVE_SECOND_UNTIL_DRAWING = 0
                 else:
