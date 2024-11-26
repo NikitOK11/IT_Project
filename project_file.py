@@ -87,8 +87,6 @@ def phaseDrawingCircle(frm):
             ...
 
 
-
-
 Settings.CURRENT_PHASE = phaseCapturingFinger
 with mp.solutions.hands.Hands(static_image_mode=True, max_num_hands=1, min_detection_confidence=0.5) as handsDetector:
     capture = cv2.VideoCapture(0)
