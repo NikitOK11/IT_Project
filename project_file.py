@@ -100,6 +100,15 @@ def phaseDrawingCircle(frm):
             y_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].y * frm.shape[0])
             Settings.index_frame_circles.append((x_index_tip, y_index_tip))
 
+        if Settings.index_frame_circles[-1] == Settings.index_frame_circles[0]:
+            cv2.putText(frm, f"Press enter to restart the game!", (105, 40),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.8, (0, 0, 0))
+
+            key = cv2.waitKey(0) & 0xFF
+            if key == 13:
+                Settings.CURRENT_PHASE = phaseCapturingFinger
+
 
 Settings.CURRENT_PHASE = phaseCapturingFinger
 with mp.solutions.hands.Hands(static_image_mode=True, max_num_hands=1, min_detection_confidence=0.5) as handsDetector:
