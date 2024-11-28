@@ -37,7 +37,7 @@ def check_only_finger(image):
 
 # noinspection PyGlobalUndefined
 def phaseCapturingFinger(frm):
-    cv2.circle(frm, (frm.shape[1] // 2, frm.shape[0] // 2), 13, (44, 62, 80), -1)
+    cv2.circle(frm, (frm.shape[1] // 2, frm.shape[0] // 2), 5, (44, 62, 80), -1)
     if Settings.only_index_finger:
         cv2.putText(frm, "Captured your finger!", (160, 20),
                     cv2.FONT_HERSHEY_SIMPLEX,
@@ -56,7 +56,7 @@ def phaseCapturingFinger(frm):
 def phaseDrawingCircle(frm):
     hands = handsDetector.process(frm)
 
-    cv2.circle(frm, (frm.shape[1] // 2, frm.shape[0] // 2), 13, (44, 62, 80), -1)
+    cv2.circle(frm, (frm.shape[1] // 2, frm.shape[0] // 2), 5, (44, 62, 80), -1)
     if not Settings.DRAWING:
         cv2.putText(flippedRGB, "Place your finger to the point from which you start!", (15, 20),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0))
@@ -71,29 +71,34 @@ def phaseDrawingCircle(frm):
             Settings.REMOVE_SECOND_UNTIL_DRAWING += 1
 
         if Settings.SECONDS_UNTIL_DRAWING == 0:
-            x_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].x * frm.shape[0])
-            y_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].y * frm.shape[0])
-            Settings.circle_radius = math.hypot(abs(frm.shape[1] // 2 - x_index_tip), abs(frm.shape[0] // 2 - y_index_tip))
+            if hands.multi_hand_landmarks is not None:
+                x_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].x * frm.shape[1])
+                y_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].y * frm.shape[0])
+                Settings.circle_radius = math.hypot(abs(frm.shape[1] // 2 - x_index_tip), abs(frm.shape[0] // 2 - y_index_tip))
 
-            Settings.index_frame_circles.append((x_index_tip, y_index_tip))
-            Settings.DRAWING = True
+                Settings.index_frame_circles.append((x_index_tip, y_index_tip))
+                Settings.DRAWING = True
     else:
         cv2.putText(frm, f"Draw the circle around the dot", (105, 20),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     0.8, (0, 0, 0))
 
-        for circle_point in Settings.index_frame_circles:
+        for i in range(len(Settings.index_frame_circles)):
+            circle_point = Settings.index_frame_circles[i]
             x_tip, y_tip = circle_point[0], circle_point[1]
 
             dist_from_center = math.hypot(abs(frm.shape[1] // 2 - x_tip), abs(frm.shape[0] // 2 - y_tip))
-            mistake = abs(Settings.circle_radius - dist_from_center) // 2
+            mistake = abs(Settings.circle_radius - dist_from_center) // 4
 
             color_mistake = Settings.colors_error_from_radius[int(min(5, mistake))]
-            cv2.circle(frm, (x_tip, y_tip), 3, color_mistake, -1)
+            if i > 0:
+                cv2.line(frm, (x_tip, y_tip),
+                         (Settings.index_frame_circles[i - 1][0], Settings.index_frame_circles[i - 1][1]), color_mistake, 1)
 
-        x_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].x * frm.shape[0])
-        y_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].y * frm.shape[0])
-        Settings.index_frame_circles.append((x_index_tip + 20, y_index_tip))
+        if hands.multi_hand_landmarks is not None:
+            x_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].x * frm.shape[1])
+            y_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].y * frm.shape[0])
+            Settings.index_frame_circles.append((x_index_tip, y_index_tip))
 
 
 Settings.CURRENT_PHASE = phaseCapturingFinger
