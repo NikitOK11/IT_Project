@@ -105,8 +105,7 @@ def phaseDrawingCircle(frm):
                         cv2.FONT_HERSHEY_SIMPLEX,
                         0.8, (0, 0, 0))
 
-            key = cv2.waitKey(0) & 0xFF
-            if key == 13:
+            if cv2.waitKey(1) & 0xFF == ord('enter'):
                 Settings.CURRENT_PHASE = phaseCapturingFinger
 
 
