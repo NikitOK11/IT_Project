@@ -1,5 +1,4 @@
 import math
-
 import cv2
 import mediapipe as mp
 import numpy as np
@@ -84,7 +83,17 @@ def phaseDrawingCircle(frm):
                     0.8, (0, 0, 0))
 
         for circle_point in Settings.index_frame_circles:
-            ...
+            x_tip, y_tip = circle_point[0], circle_point[1]
+
+            dist_from_center = math.hypot(abs(frm.shape[1] // 2 - x_tip), abs(frm.shape[0] // 2 - y_tip))
+            mistake = abs(Settings.circle_radius - dist_from_center) / 2
+
+            color_mistake = Settings.colors_error_from_radius[min(5, mistake)]
+            cv2.circle(frm, (x_tip, y_tip), 1, color_mistake, -1)
+
+        x_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].x * frm.shape[0])
+        y_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].y * frm.shape[0])
+        Settings.index_frame_circles.append((x_index_tip, y_index_tip))
 
 
 Settings.CURRENT_PHASE = phaseCapturingFinger
