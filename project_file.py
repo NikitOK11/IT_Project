@@ -128,8 +128,25 @@ def phaseDrawingCircle(frm):
             y_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].y * frm.shape[0])
             Settings.index_frame_circles.append((x_index_tip, y_index_tip))
 
-        if Settings.index_frame_circles[-1] == Settings.index_frame_circles[0]:
-            Settings.CURRENT_PHASE = phaseEndGame
+            if hands.multi_hand_landmarks is not None:
+                x_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].x * frm.shape[1])
+                y_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].y * frm.shape[0])
+                Settings.index_frame_circles.append((x_index_tip, y_index_tip))
+
+                # Check if the circle is closed
+                if len(Settings.index_frame_circles) > 150:  # Minimum points to consider a valid circle
+                    start_point = Settings.index_frame_circles[0]
+                    recent_points = Settings.index_frame_circles[-10:]  # Check last 10 points
+                    close_to_start_count = 0
+
+                    for point in recent_points:
+                        distance = math.hypot(start_point[0] - point[0], start_point[1] - point[1])
+                        if distance < Settings.circle_radius * 0.1:  # Close to the starting point
+                            close_to_start_count += 1
+
+                    # Ensure at least 7 out of the last 10 points are close to the starting point
+                    if close_to_start_count >= 7:
+                        Settings.CURRENT_PHASE = phaseEndGame
 
 
 def phaseEndGame(frm):
