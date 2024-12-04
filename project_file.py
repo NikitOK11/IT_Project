@@ -164,6 +164,10 @@ def phaseEndGame(frm):
             cv2.line(frm, (x_tip, y_tip),
                      (Settings.index_frame_circles[i - 1][0],
                       Settings.index_frame_circles[i - 1][1]), color_mistake, 4)
+        else:
+            cv2.line(frm, (x_tip, y_tip),
+                     (Settings.index_frame_circles[-1][0],
+                      Settings.index_frame_circles[-1][1]), color_mistake, 4)
 
 
 Settings.CURRENT_PHASE = phaseCapturingFinger
