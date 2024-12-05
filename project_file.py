@@ -5,7 +5,7 @@ import numpy as np
 import Settings
 
 
-def check_only_finger(image):
+def check_only_finger(image) -> bool:
     hands = handsDetector.process(image)
 
     if hands.multi_hand_landmarks is not None:
@@ -35,7 +35,7 @@ def check_only_finger(image):
     return False
 
 
-def reset_settings():
+def reset_settings() -> None:
     Settings.DRAWING = False
     Settings.only_index_finger = False
 
@@ -52,7 +52,7 @@ def reset_settings():
 
 
 # noinspection PyGlobalUndefined
-def phaseCapturingFinger(frm):
+def phaseCapturingFinger(frm) -> None:
     cv2.circle(frm, (frm.shape[1] // 2, frm.shape[0] // 2), 5, (44, 62, 80), -1)
     if Settings.only_index_finger:
         cv2.putText(frm, "Captured your finger!", (160, 20),
@@ -69,7 +69,7 @@ def phaseCapturingFinger(frm):
 
 
 # noinspection PyGlobalUndefined
-def phaseDrawingCircle(frm):
+def phaseDrawingCircle(frm) -> None:
     hands = handsDetector.process(frm)
 
     cv2.circle(frm, (frm.shape[1] // 2, frm.shape[0] // 2), 5, (44, 62, 80), -1)
@@ -147,7 +147,7 @@ def phaseDrawingCircle(frm):
                         Settings.CURRENT_PHASE = phaseEndGame
 
 
-def phaseEndGame(frm):
+def phaseEndGame(frm) -> None:
     hands = handsDetector.process(frm)
 
     cv2.putText(frm, f"Accuracy: {round(Settings.ACCURACY_DRAWING * 100, 1)}%",
