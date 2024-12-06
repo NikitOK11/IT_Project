@@ -106,10 +106,10 @@ def phaseNoHandsFound(frame) -> None:
 def phaseCapturingFinger(frame) -> None:
     cv2.circle(frame, (frame.shape[1] // 2, frame.shape[0] // 2), 5, (44, 62, 80), -1)
     if Settings.only_index_finger:
-        cv2.putText(frame, "Captured your finger!", (115, 30),
+        cv2.putText(frame, "Captured your finger!", (120, 30),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     1, (0, 0, 0))
-        if Settings.START_PHASE_TWO == 40:
+        if Settings.START_PHASE_TWO == 25:
             Settings.CURRENT_PHASE = phaseDrawingCircle
         else:
             Settings.START_PHASE_TWO += 1
@@ -131,7 +131,7 @@ def phaseDrawingCircle(frame) -> None:
                     cv2.FONT_HERSHEY_SIMPLEX,
                     0.8, (0, 0, 0))
 
-        if Settings.REMOVE_SECOND_UNTIL_DRAWING == 30:
+        if Settings.REMOVE_SECOND_UNTIL_DRAWING == 20:
             Settings.SECONDS_UNTIL_DRAWING -= 1
             Settings.REMOVE_SECOND_UNTIL_DRAWING = 0
         else:
