@@ -209,7 +209,7 @@ def phaseEndGame(frame) -> None:
     cv2.putText(frame, f"Accuracy: {round(Settings.ACCURACY_DRAWING * 100, 1)}%",
                 (230, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0))
 
-    best_score = loadBestScore()
+    best_score: float = loadBestScore()
     if Settings.ACCURACY_DRAWING > best_score:
         savBestScore(Settings.ACCURACY_DRAWING)
         cv2.putText(frame, "Congratulations! New Record!", (140, 100),
@@ -234,7 +234,7 @@ with mp.solutions.hands.Hands(static_image_mode=True, max_num_hands=1, min_detec
 
         if hands_in_frame:
             Settings.CURRENT_PHASE(flippedRGB)
-        else:
+        elif not hands_in_frame and Settings.CURRENT_PHASE == phaseDrawingCircle:
             phaseNoHandsFound(flippedRGB)
 
         res_image = cv2.cvtColor(flippedRGB, cv2.COLOR_RGB2BGR)
