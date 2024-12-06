@@ -6,7 +6,7 @@ import Settings
 import os
 
 
-def check_only_finger(frame) -> bool:
+def checkOnlyFinger(frame) -> bool:
     hands = handsDetector.process(frame)
 
     if hands.multi_hand_landmarks is not None:
@@ -36,14 +36,14 @@ def check_only_finger(frame) -> bool:
     return False
 
 
-def check_hands(frame):
+def checkHands(frame):
     hands = handsDetector.process(frame)
     if hands.multi_hand_landmarks is None:
         return False
     return True
 
 
-def load_best_score():
+def loadBestScore():
     if os.path.exists(Settings.RESULTS_FILE):
         with open(Settings.RESULTS_FILE, "r") as file:
             try:
@@ -53,12 +53,12 @@ def load_best_score():
     return 0.0
 
 
-def save_best_score(score):
+def savBestScore(score):
     with open(Settings.RESULTS_FILE, "w") as file:
         file.write(f"{score:.1f}")
 
 
-def reset_settings() -> None:
+def resetSettings() -> None:
     Settings.DRAWING = False
     Settings.only_index_finger = False
 
@@ -71,7 +71,35 @@ def reset_settings() -> None:
 
     Settings.ACCURACY_DRAWING = 1
 
-    Settings.CURRENT_PHASE = check_only_finger
+    Settings.CURRENT_PHASE = checkOnlyFinger
+
+
+def drawCircleOnFrame(frame) -> None:
+    for i in range(len(Settings.index_frame_circles)):
+        circle_point = Settings.index_frame_circles[i]
+        x_tip, y_tip = circle_point[0], circle_point[1]
+
+        dist_from_center = int(math.hypot(abs(frame.shape[1] // 2 - x_tip), abs(frame.shape[0] // 2 - y_tip)))
+        mistake = abs(Settings.circle_radius - dist_from_center) // 4
+        color_mistake = Settings.colors_error_from_radius[int(min(5, mistake))]
+        if i > 0:
+            cv2.line(frame, (x_tip, y_tip),
+                     (Settings.index_frame_circles[i - 1][0],
+                      Settings.index_frame_circles[i - 1][1]), color_mistake, 4)
+        else:
+            cv2.line(frame, (x_tip, y_tip),
+                     (Settings.index_frame_circles[-1][0],
+                      Settings.index_frame_circles[-1][1]), color_mistake, 4)
+
+
+def phaseNoHandsFound(frame) -> None:
+    cv2.circle(frame, (frame.shape[1] // 2, frame.shape[0] // 2), 5, (44, 62, 80), -1)
+    cv2.putText(frame, "Please, make sure your hands are fully in the frame", (130, 30),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.8, (0, 0, 0))
+
+    if len(Settings.index_frame_circles) > 0:
+        drawCircleOnFrame(frame)
 
 
 # noinspection PyGlobalUndefined
@@ -86,7 +114,7 @@ def phaseCapturingFinger(frame) -> None:
         else:
             Settings.START_PHASE_TWO += 1
     else:
-        Settings.only_index_finger = check_only_finger(flippedRGB)
+        Settings.only_index_finger = checkOnlyFinger(flippedRGB)
         cv2.putText(flippedRGB, "Can't see your index finger...", (100, 45),
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0))
 
@@ -113,7 +141,7 @@ def phaseDrawingCircle(frame) -> None:
             if hands.multi_hand_landmarks is not None:
                 x_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].x * frame.shape[1])
                 y_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].y * frame.shape[0])
-                Settings.circle_radius = math.hypot(abs(frame.shape[1] // 2 - x_index_tip), abs(frame.shape[0] // 2 - y_index_tip))
+                Settings.circle_radius = int(math.hypot(abs(frame.shape[1] // 2 - x_index_tip), abs(frame.shape[0] // 2 - y_index_tip)))
 
                 Settings.index_frame_circles.append((x_index_tip, y_index_tip))
             Settings.DRAWING = True
@@ -181,34 +209,16 @@ def phaseEndGame(frame) -> None:
     cv2.putText(frame, f"Accuracy: {round(Settings.ACCURACY_DRAWING * 100, 1)}%",
                 (230, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0))
 
-    best_score = load_best_score()
+    best_score = loadBestScore()
     if Settings.ACCURACY_DRAWING > best_score:
-        save_best_score(Settings.ACCURACY_DRAWING)
+        savBestScore(Settings.ACCURACY_DRAWING)
         cv2.putText(frame, "Congratulations! New Record!", (140, 100),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255))
 
-    for i in range(len(Settings.index_frame_circles)):
-        circle_point = Settings.index_frame_circles[i]
-        x_tip, y_tip = circle_point[0], circle_point[1]
-
-        dist_from_center = math.hypot(abs(frame.shape[1] // 2 - x_tip), abs(frame.shape[0] // 2 - y_tip))
-        mistake = abs(Settings.circle_radius - dist_from_center) // 4
-        color_mistake = Settings.colors_error_from_radius[int(min(5, mistake))]
-        if i > 0:
-            cv2.line(frame, (x_tip, y_tip),
-                     (Settings.index_frame_circles[i - 1][0],
-                      Settings.index_frame_circles[i - 1][1]), color_mistake, 4)
-        else:
-            cv2.line(frame, (x_tip, y_tip),
-                     (Settings.index_frame_circles[-1][0],
-                      Settings.index_frame_circles[-1][1]), color_mistake, 4)
+    drawCircleOnFrame(frame)
 
     cv2.putText(frame, "Press Enter to play again", (180, 75),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255))
-
-    if cv2.waitKey(1) & 0xFF == 13:
-        reset_settings()
-        Settings.CURRENT_PHASE = phaseCapturingFinger
 
 
 Settings.CURRENT_PHASE = phaseCapturingFinger
@@ -220,16 +230,21 @@ with mp.solutions.hands.Hands(static_image_mode=True, max_num_hands=1, min_detec
             break
 
         flippedRGB = cv2.cvtColor(np.fliplr(frame_recorded), cv2.COLOR_BGR2RGB)
-        Settings.CURRENT_PHASE(flippedRGB)
-        res_image = cv2.cvtColor(flippedRGB, cv2.COLOR_RGB2BGR)
+        hands_in_frame = checkHands(flippedRGB)
 
+        if hands_in_frame:
+            Settings.CURRENT_PHASE(flippedRGB)
+        else:
+            phaseNoHandsFound(flippedRGB)
+
+        res_image = cv2.cvtColor(flippedRGB, cv2.COLOR_RGB2BGR)
         cv2.imshow("Hands", res_image)
 
         key = cv2.waitKey(1) & 0xFF
         if key == ord('q'):
             break
         elif key == 13:
-            reset_settings()
+            resetSettings()
             Settings.CURRENT_PHASE = phaseCapturingFinger
 
     handsDetector.close()
