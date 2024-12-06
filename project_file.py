@@ -143,13 +143,11 @@ def phaseDrawingCircle(frm) -> None:
                         if distance < Settings.circle_radius * 0.1:
                             close_to_start_count += 1
 
-                    if close_to_start_count >= 7:
+                    if close_to_start_count >= 5:
                         Settings.CURRENT_PHASE = phaseEndGame
 
 
 def phaseEndGame(frm) -> None:
-    hands = handsDetector.process(frm)
-
     cv2.putText(frm, f"Accuracy: {round(Settings.ACCURACY_DRAWING * 100, 1)}%",
                 (150, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0))
 
@@ -169,20 +167,34 @@ def phaseEndGame(frm) -> None:
                      (Settings.index_frame_circles[-1][0],
                       Settings.index_frame_circles[-1][1]), color_mistake, 4)
 
+    cv2.putText(frm, "Press Enter to play again", (180, 75),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255))
+
+    if cv2.waitKey(1) & 0xFF == 13:
+        reset_settings()
+        Settings.CURRENT_PHASE = phaseCapturingFinger
+
 
 Settings.CURRENT_PHASE = phaseCapturingFinger
 with mp.solutions.hands.Hands(static_image_mode=True, max_num_hands=1, min_detection_confidence=0.5) as handsDetector:
     capture = cv2.VideoCapture(0)
     while capture.isOpened():
         ret, frame = capture.read()
-        if cv2.waitKey(1) & 0xFF == ord('q') or not ret:
+        if not ret:
             break
 
         flippedRGB = cv2.cvtColor(np.fliplr(frame), cv2.COLOR_BGR2RGB)
-
         Settings.CURRENT_PHASE(flippedRGB)
-
         res_image = cv2.cvtColor(flippedRGB, cv2.COLOR_RGB2BGR)
+
         cv2.imshow("Hands", res_image)
 
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('q'):
+            break
+        elif key == 13:
+            reset_settings()
+            Settings.CURRENT_PHASE = phaseCapturingFinger
+
     handsDetector.close()
+    capture.release()
