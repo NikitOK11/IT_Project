@@ -3,8 +3,8 @@ only_index_finger: bool = False
 
 CURRENT_PHASE: callable = None
 
-index_frame_circles: list[tuple[int, int]] = []  # Координаты точек, рисующих круг
-circle_radius: float = 0  # Радиус круга, который нужно нарисовать
+index_frame_circles: list[tuple[int, int]] = []
+circle_radius: int = 0
 
 colors_error_from_radius: list[tuple[int, int, int]] = [
     (61, 255, 24),
