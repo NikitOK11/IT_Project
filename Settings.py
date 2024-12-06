@@ -1,16 +1,25 @@
-DRAWING = False
-only_index_finger = False
+DRAWING: bool = False
+only_index_finger: bool = False
 
-CURRENT_PHASE = None
+CURRENT_PHASE: callable = None
 
-index_frame_circles = []
-circle_radius = 0
-colors_error_from_radius = [(61, 255, 24), (148, 255, 24), (218, 255, 24), (255, 222, 24), (255, 176, 24), (255, 97, 24)]
+index_frame_circles: list[tuple[int, int]] = []  # Координаты точек, рисующих круг
+circle_radius: float = 0  # Радиус круга, который нужно нарисовать
 
-SECONDS_UNTIL_DRAWING = 5
-REMOVE_SECOND_UNTIL_DRAWING = 20
-START_PHASE_TWO = 0
+colors_error_from_radius: list[tuple[int, int, int]] = [
+    (61, 255, 24),
+    (148, 255, 24),
+    (218, 255, 24),
+    (255, 222, 24),
+    (255, 176, 24),
+    (255, 97, 24)
+]
 
-ACCURACY_DRAWING = 1
+SECONDS_UNTIL_DRAWING: int = 5
+REMOVE_SECOND_UNTIL_DRAWING: int = 20
 
-RESULTS_FILE = "results.txt"
+START_PHASE_TWO: int = 0
+
+ACCURACY_DRAWING: float = 1
+
+RESULTS_FILE: str = "results.txt"
