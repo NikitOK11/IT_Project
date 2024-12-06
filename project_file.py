@@ -94,9 +94,9 @@ def drawCircleOnFrame(frame) -> None:
 
 def phaseNoHandsFound(frame) -> None:
     cv2.circle(frame, (frame.shape[1] // 2, frame.shape[0] // 2), 5, (44, 62, 80), -1)
-    cv2.putText(frame, "Please, make sure your hands are fully in the frame", (130, 30),
+    cv2.putText(frame, "Please, make sure your hands are fully in the frame", (25, 30),
                 cv2.FONT_HERSHEY_SIMPLEX,
-                0.8, (0, 0, 0))
+                0.7, (0, 0, 0))
 
     if len(Settings.index_frame_circles) > 0:
         drawCircleOnFrame(frame)
@@ -106,16 +106,16 @@ def phaseNoHandsFound(frame) -> None:
 def phaseCapturingFinger(frame) -> None:
     cv2.circle(frame, (frame.shape[1] // 2, frame.shape[0] // 2), 5, (44, 62, 80), -1)
     if Settings.only_index_finger:
-        cv2.putText(frame, "Captured your finger!", (160, 20),
+        cv2.putText(frame, "Captured your finger!", (115, 30),
                     cv2.FONT_HERSHEY_SIMPLEX,
-                    0.8, (0, 0, 0))
-        if Settings.START_PHASE_TWO == 25:
+                    1, (0, 0, 0))
+        if Settings.START_PHASE_TWO == 40:
             Settings.CURRENT_PHASE = phaseDrawingCircle
         else:
             Settings.START_PHASE_TWO += 1
     else:
         Settings.only_index_finger = checkOnlyFinger(flippedRGB)
-        cv2.putText(flippedRGB, "Can't see your index finger...", (100, 45),
+        cv2.putText(flippedRGB, "Can't see your index finger...", (85, 30),
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0))
 
 
@@ -153,7 +153,7 @@ def phaseDrawingCircle(frame) -> None:
                         cv2.FONT_HERSHEY_SIMPLEX,
                         0.8, (0, 0, 0))
         else:
-            cv2.putText(frame, f"Draw the circle around the dot", (105, 20),
+            cv2.putText(frame, f"Draw the circle around the dot", (130, 30),
                         cv2.FONT_HERSHEY_SIMPLEX,
                         0.8, (0, 0, 0))
 
@@ -179,7 +179,7 @@ def phaseDrawingCircle(frame) -> None:
                 Settings.ACCURACY_DRAWING = accuracy_sum / len(Settings.index_frame_circles)
 
             cv2.putText(frame, f"Accuracy: {round(Settings.ACCURACY_DRAWING * 100, 1)}%",
-                        (230, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0))
+                        (210, 55), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0))
 
             if hands.multi_hand_landmarks is not None:
                 x_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].x * frame.shape[1])
