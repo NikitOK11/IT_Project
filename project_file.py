@@ -3,6 +3,7 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import Settings
+import os
 
 
 def check_only_finger(image) -> bool:
@@ -35,6 +36,21 @@ def check_only_finger(image) -> bool:
     return False
 
 
+def load_best_score():
+    if os.path.exists(Settings.RESULTS_FILE):
+        with open(Settings.RESULTS_FILE, "r") as file:
+            try:
+                return float(file.read().strip())
+            except ValueError:
+                return 0.0
+    return 0.0
+
+
+def save_best_score(score):
+    with open(Settings.RESULTS_FILE, "w") as file:
+        file.write(f"{score:.1f}")
+
+
 def reset_settings() -> None:
     Settings.DRAWING = False
     Settings.only_index_finger = False
@@ -64,8 +80,8 @@ def phaseCapturingFinger(frm) -> None:
             Settings.START_PHASE_TWO += 1
     else:
         Settings.only_index_finger = check_only_finger(flippedRGB)
-        cv2.putText(flippedRGB, "Can't see your index finger...", (100, 25),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0))
+        cv2.putText(flippedRGB, "Can't see your index finger...", (120, 30),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 0))
 
 
 # noinspection PyGlobalUndefined
@@ -95,61 +111,74 @@ def phaseDrawingCircle(frm) -> None:
                 Settings.index_frame_circles.append((x_index_tip, y_index_tip))
             Settings.DRAWING = True
     else:
-        cv2.putText(frm, f"Draw the circle around the dot", (105, 20),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.8, (0, 0, 0))
+        x_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].x * frm.shape[1])
+        y_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].y * frm.shape[0])
+        if math.hypot(x_index_tip, y_index_tip, frm.shape[1] // 2, frm.shape[0] // 2) < 10:
+            cv2.putText(frm, f"Your finger is too close to center!", (105, 20),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.8, (0, 0, 0))
+        else:
+            cv2.putText(frm, f"Draw the circle around the dot", (105, 20),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.8, (0, 0, 0))
 
-        accuracy_sum = 0
-        for i in range(len(Settings.index_frame_circles)):
-            circle_point = Settings.index_frame_circles[i]
-            x_tip, y_tip = circle_point[0], circle_point[1]
+            accuracy_sum = 0
+            for i in range(len(Settings.index_frame_circles)):
+                circle_point = Settings.index_frame_circles[i]
+                x_tip, y_tip = circle_point[0], circle_point[1]
 
-            dist_from_center = math.hypot(abs(frm.shape[1] // 2 - x_tip), abs(frm.shape[0] // 2 - y_tip))
-            mistake = abs(Settings.circle_radius - dist_from_center) // 4
+                dist_from_center = math.hypot(abs(frm.shape[1] // 2 - x_tip), abs(frm.shape[0] // 2 - y_tip))
+                mistake = abs(Settings.circle_radius - dist_from_center) // 4
 
-            difference = 1 - (abs(Settings.circle_radius - dist_from_center) / Settings.circle_radius) * 2.5
-            difference = max(0, difference)
-            accuracy_sum += difference
+                difference = 1 - (abs(Settings.circle_radius - dist_from_center) / Settings.circle_radius) * 2.5
+                difference = max(0, difference)
+                accuracy_sum += difference
 
-            color_mistake = Settings.colors_error_from_radius[int(min(5, mistake))]
-            if i > 0:
-                cv2.line(frm, (x_tip, y_tip),
-                         (Settings.index_frame_circles[i - 1][0],
-                          Settings.index_frame_circles[i - 1][1]), color_mistake, 4)
+                color_mistake = Settings.colors_error_from_radius[int(min(5, mistake))]
+                if i > 0:
+                    cv2.line(frm, (x_tip, y_tip),
+                             (Settings.index_frame_circles[i - 1][0],
+                              Settings.index_frame_circles[i - 1][1]), color_mistake, 4)
 
-        if len(Settings.index_frame_circles) > 0:
-            Settings.ACCURACY_DRAWING = accuracy_sum / len(Settings.index_frame_circles)
+            if len(Settings.index_frame_circles) > 0:
+                Settings.ACCURACY_DRAWING = accuracy_sum / len(Settings.index_frame_circles)
 
-        cv2.putText(frm, f"Accuracy: {round(Settings.ACCURACY_DRAWING * 100, 1)}%",
-                    (150, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0))
-
-        if hands.multi_hand_landmarks is not None:
-            x_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].x * frm.shape[1])
-            y_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].y * frm.shape[0])
-            Settings.index_frame_circles.append((x_index_tip, y_index_tip))
+            cv2.putText(frm, f"Accuracy: {round(Settings.ACCURACY_DRAWING * 100, 1)}%",
+                        (230, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0))
 
             if hands.multi_hand_landmarks is not None:
                 x_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].x * frm.shape[1])
                 y_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].y * frm.shape[0])
                 Settings.index_frame_circles.append((x_index_tip, y_index_tip))
 
-                if len(Settings.index_frame_circles) > 150:
-                    start_point = Settings.index_frame_circles[0]
-                    recent_points = Settings.index_frame_circles[-10:]
-                    close_to_start_count = 0
+                if hands.multi_hand_landmarks is not None:
+                    x_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].x * frm.shape[1])
+                    y_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].y * frm.shape[0])
+                    Settings.index_frame_circles.append((x_index_tip, y_index_tip))
 
-                    for point in recent_points:
-                        distance = math.hypot(start_point[0] - point[0], start_point[1] - point[1])
-                        if distance < Settings.circle_radius * 0.1:
-                            close_to_start_count += 1
+                    if len(Settings.index_frame_circles) > 150:
+                        start_point = Settings.index_frame_circles[0]
+                        recent_points = Settings.index_frame_circles[-10:]
+                        close_to_start_count = 0
 
-                    if close_to_start_count >= 5:
-                        Settings.CURRENT_PHASE = phaseEndGame
+                        for point in recent_points:
+                            distance = math.hypot(start_point[0] - point[0], start_point[1] - point[1])
+                            if distance < Settings.circle_radius * 0.1:
+                                close_to_start_count += 1
+
+                        if close_to_start_count >= 5:
+                            Settings.CURRENT_PHASE = phaseEndGame
 
 
 def phaseEndGame(frm) -> None:
     cv2.putText(frm, f"Accuracy: {round(Settings.ACCURACY_DRAWING * 100, 1)}%",
-                (150, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0))
+                (230, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0))
+
+    best_score = load_best_score()
+    if Settings.ACCURACY_DRAWING > best_score:
+        save_best_score(Settings.ACCURACY_DRAWING)
+        cv2.putText(frm, "Congratulations! New Record!", (140, 100),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255))
 
     for i in range(len(Settings.index_frame_circles)):
         circle_point = Settings.index_frame_circles[i]
