@@ -163,10 +163,10 @@ def phaseDrawingCircle(frm) -> None:
 
                         for point in recent_points:
                             distance = math.hypot(start_point[0] - point[0], start_point[1] - point[1])
-                            if distance < Settings.circle_radius * 0.1:
+                            if distance < Settings.circle_radius * 0.5:
                                 close_to_start_count += 1
 
-                        if close_to_start_count >= 5:
+                        if close_to_start_count >= 7:
                             Settings.CURRENT_PHASE = phaseEndGame
 
 
