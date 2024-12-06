@@ -130,7 +130,7 @@ def phaseCapturingFinger(frame) -> None:
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0))
 
 
-# noinspection PyGlobalUndefined
+# noinspection PyGlobalUndefined,PyTypeChecker
 def phaseDrawingCircle(frame) -> None:
     hands = handsDetector.process(frame)
 
