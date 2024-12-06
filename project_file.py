@@ -43,6 +43,21 @@ def checkHands(frame):
     return True
 
 
+def isCircleClosed(circles, radius, threshold=0.5, min_close_points=5):
+    if len(circles) < 10:
+        return False
+
+    start_point = circles[0]
+    close_to_start_count = 0
+
+    for point in circles:
+        distance = math.hypot(start_point[0] - point[0], start_point[1] - point[1])
+        if distance < radius * threshold:
+            close_to_start_count += 1
+
+    return close_to_start_count >= min_close_points
+
+
 def loadBestScore():
     if os.path.exists(Settings.RESULTS_FILE):
         with open(Settings.RESULTS_FILE, "r") as file:
@@ -86,10 +101,6 @@ def drawCircleOnFrame(frame) -> None:
             cv2.line(frame, (x_tip, y_tip),
                      (Settings.index_frame_circles[i - 1][0],
                       Settings.index_frame_circles[i - 1][1]), color_mistake, 4)
-        else:
-            cv2.line(frame, (x_tip, y_tip),
-                     (Settings.index_frame_circles[-1][0],
-                      Settings.index_frame_circles[-1][1]), color_mistake, 4)
 
 
 def phaseNoHandsFound(frame) -> None:
@@ -192,16 +203,8 @@ def phaseDrawingCircle(frame) -> None:
                     Settings.index_frame_circles.append((x_index_tip, y_index_tip))
 
                     if len(Settings.index_frame_circles) > 150:
-                        start_point = Settings.index_frame_circles[0]
-                        recent_points = Settings.index_frame_circles[-10:]
-                        close_to_start_count = 0
-
-                        for point in recent_points:
-                            distance = math.hypot(start_point[0] - point[0], start_point[1] - point[1])
-                            if distance < Settings.circle_radius * 0.5:
-                                close_to_start_count += 1
-
-                        if close_to_start_count >= 7:
+                        circles = Settings.index_frame_circles[-50:]
+                        if isCircleClosed(circles, Settings.circle_radius):
                             Settings.CURRENT_PHASE = phaseEndGame
 
 
