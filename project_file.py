@@ -43,7 +43,7 @@ def checkHands(frame):
     return True
 
 
-def isCircleClosed(circles, radius, threshold=0.5, min_close_points=5):
+def isCircleClosed(circles, radius, threshold=0.5, min_close_points=5) -> bool:
     if len(circles) < 10:
         return False
 
@@ -58,7 +58,7 @@ def isCircleClosed(circles, radius, threshold=0.5, min_close_points=5):
     return close_to_start_count >= min_close_points
 
 
-def loadBestScore():
+def loadBestScore() -> float:
     if os.path.exists(Settings.RESULTS_FILE):
         with open(Settings.RESULTS_FILE, "r") as file:
             try:
@@ -68,7 +68,7 @@ def loadBestScore():
     return 0.0
 
 
-def savBestScore(score):
+def savBestScore(score) -> None:
     with open(Settings.RESULTS_FILE, "w") as file:
         file.write(f"{score:.1f}")
 
@@ -95,8 +95,8 @@ def drawCircleOnFrame(frame) -> None:
         x_tip, y_tip = circle_point[0], circle_point[1]
 
         dist_from_center = int(math.hypot(abs(frame.shape[1] // 2 - x_tip), abs(frame.shape[0] // 2 - y_tip)))
-        mistake = abs(Settings.circle_radius - dist_from_center) // 4
-        color_mistake = Settings.colors_error_from_radius[int(min(5, mistake))]
+        mistake: int = abs(Settings.circle_radius - dist_from_center) // 4
+        color_mistake: tuple[int, int, int] = Settings.colors_error_from_radius[int(min(5, mistake))]
         if i > 0:
             cv2.line(frame, (x_tip, y_tip),
                      (Settings.index_frame_circles[i - 1][0],
@@ -150,15 +150,15 @@ def phaseDrawingCircle(frame) -> None:
 
         if Settings.SECONDS_UNTIL_DRAWING == 0:
             if hands.multi_hand_landmarks is not None:
-                x_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].x * frame.shape[1])
-                y_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].y * frame.shape[0])
+                x_index_tip: int = int(hands.multi_hand_landmarks[0].landmark[8].x * frame.shape[1])
+                y_index_tip: int = int(hands.multi_hand_landmarks[0].landmark[8].y * frame.shape[0])
                 Settings.circle_radius = int(math.hypot(abs(frame.shape[1] // 2 - x_index_tip), abs(frame.shape[0] // 2 - y_index_tip)))
 
                 Settings.index_frame_circles.append((x_index_tip, y_index_tip))
             Settings.DRAWING = True
     else:
-        x_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].x * frame.shape[1])
-        y_index_tip = int(hands.multi_hand_landmarks[0].landmark[8].y * frame.shape[0])
+        x_index_tip: int = int(hands.multi_hand_landmarks[0].landmark[8].x * frame.shape[1])
+        y_index_tip: int = int(hands.multi_hand_landmarks[0].landmark[8].y * frame.shape[0])
         if math.hypot(x_index_tip, y_index_tip, frame.shape[0] // 2, frame.shape[1] // 2) < 300:
             cv2.putText(frame, f"Your finger is too close to center!", (105, 20),
                         cv2.FONT_HERSHEY_SIMPLEX,
