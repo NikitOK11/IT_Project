@@ -232,7 +232,7 @@ with mp.solutions.hands.Hands(static_image_mode=True, max_num_hands=1, min_detec
         flippedRGB = cv2.cvtColor(np.fliplr(frame_recorded), cv2.COLOR_BGR2RGB)
         hands_in_frame = checkHands(flippedRGB)
 
-        if hands_in_frame:
+        if hands_in_frame or Settings.CURRENT_PHASE != phaseDrawingCircle:
             Settings.CURRENT_PHASE(flippedRGB)
         elif not hands_in_frame and Settings.CURRENT_PHASE == phaseDrawingCircle:
             phaseNoHandsFound(flippedRGB)
